@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import PostJob from "./pages/PostJob";
 import PrivateRoute from "./components/PrivateRoute";
 
 function App() {
@@ -11,13 +12,29 @@ function App() {
         <Routes>
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          
-          {/* Protect the dashboard route */}
+
+          {/* Protected Routes */}
           <Route
             path="/"
             element={
               <PrivateRoute>
                 <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/post-job"
+            element={
+              <PrivateRoute>
+                <PostJob />
               </PrivateRoute>
             }
           />

@@ -11,6 +11,8 @@ app.use(cors());
 app.use(express.json());
 const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
+const jobRoutes = require("./routes/job");
+app.use("/api/jobs", jobRoutes);
 
 
 app.get('/', (req, res) => {

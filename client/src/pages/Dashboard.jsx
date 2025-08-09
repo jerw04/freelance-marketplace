@@ -1,42 +1,36 @@
-// Dashboard.jsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (err) {
-        console.error("Invalid user in localStorage:", err);
-      }
-    } else {
-      // No user in localStorage, redirect to login
-      navigate("/login");
-    }
-  }, [navigate]);
+  const handlePostJob = () => {
+    navigate("/post-job");
+  };
 
   if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-lg text-gray-500">Loading Dashboard...</p>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400">
-      <div className="bg-white shadow-xl rounded-lg p-8 text-center max-w-md w-full">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Welcome to the Freelance Marketplace Dashboard!
-        </h1>
-        <p className="text-lg text-gray-700">
-          Logged in as: <strong>{user.username}</strong> ({user.role})
-        </p>
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-200 to-gray-300">
+      <div className="bg-white p-10 rounded shadow-lg text-center">
+        <h1 className="text-2xl font-bold mb-4">Welcome to the Freelance Marketplace Dashboard!</h1>
+        <p className="mb-4">Logged in as: <strong>{user.username}</strong> ({user.role})</p>
+
+        {user.role === "client" && (
+          <button
+            onClick={handlePostJob}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition"
+          >
+            ➕ Post a Job
+          </button>
+        )}
+
+        {user.role === "freelancer" && (
+          <p className="text-gray-700">You can browse jobs in the next update 👷‍♂️</p>
+        )}
       </div>
     </div>
   );

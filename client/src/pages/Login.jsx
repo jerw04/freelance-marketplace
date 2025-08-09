@@ -1,82 +1,83 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function Login() {
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Login request sent:", formData); // ✅ Logging request before sending
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        formData
+      );
+      console.log("Login response:", res.data); // ✅ Logging backend response
 
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      navigate("/Dashboard");
+      localStorage.setItem("role", res.data.user.role);
+
+      if (res.data.user.role === "client") {
+        navigate("/client-dashboard");
+      } else if (res.data.user.role === "freelancer") {
+        navigate("/freelancer-dashboard");
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      console.error(err);
+      alert("Login failed");
     }
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
+      className="flex items-center justify-center min-h-screen bg-cover bg-center"
       style={{
-        backgroundImage: `url('https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1920&q=80')`,
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab')",
       }}
     >
-      {/* Overlay for darkening background */}
-      <div className="absolute inset-0 bg-black bg-opacity-60 z-0"></div>
-
-      {/* Site Title */}
-      <h1 className="absolute top-8 text-4xl font-extrabold text-white z-10 drop-shadow-lg">
-        Freelance Marketplace
-      </h1>
-
-      {/* Login Form */}
-      <form
-        onSubmit={handleSubmit}
-        className="z-10 bg-white bg-opacity-10 backdrop-blur-lg p-10 rounded-xl shadow-2xl w-96"
-      >
-        <h2 className="text-3xl font-bold mb-6 text-center text-white">Login</h2>
-
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-3 mb-4 rounded bg-white bg-opacity-70 text-black placeholder-gray-700"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full p-3 mb-4 rounded bg-white bg-opacity-70 text-black placeholder-gray-700"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 transition font-semibold"
-        >
-          Login
-        </button>
-
-        <p className="mt-4 text-center text-white">
-          Don't have an account?{" "}
-          <Link to="/register" className="text-blue-300 underline hover:text-blue-400">
+      <div className="bg-white bg-opacity-80 p-8 rounded shadow-lg w-96">
+        <h1 className="text-3xl font-bold text-center mb-6">
+          Freelance Marketplace
+        </h1>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="w-full border p-2 mb-4 rounded"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            className="w-full border p-2 mb-4 rounded"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          <button
+            type="submit"
+            className="w-full bg-blue-500 text-white p-2 rounded mb-4"
+          >
+            Login
+          </button>
+        </form>
+        <p className="text-center text-sm">
+          Don’t have an account?{" "}
+          <Link to="/register" className="text-blue-600 hover:underline">
             Register here
           </Link>
         </p>
-      </form>
+      </div>
     </div>
   );
-};
-
-export default Login;
+}

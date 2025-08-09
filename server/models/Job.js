@@ -24,6 +24,12 @@ const JobSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    applicants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Application", // links to applications table
+      }
+    ]
   },
   { timestamps: true }
 );

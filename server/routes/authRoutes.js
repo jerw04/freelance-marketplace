@@ -1,3 +1,4 @@
+// server/routes/auth.js
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
@@ -6,7 +7,9 @@ const User = require("../models/User");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Register
+// =====================
+// REGISTER
+// =====================
 router.post("/register", async (req, res) => {
   const { username, email, password, role } = req.body;
 
@@ -16,8 +19,9 @@ router.post("/register", async (req, res) => {
 
   try {
     const existingUser = await User.findOne({ email });
-    if (existingUser)
+    if (existingUser) {
       return res.status(409).json({ message: "Email already in use." });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -29,25 +33,47 @@ router.post("/register", async (req, res) => {
     });
 
     await newUser.save();
-    res.status(201).json({ message: "User registered successfully!" });
+
+    // ✅ Generate token with role
+    const token = jwt.sign(
+      { id: newUser._id, role: newUser.role },
+      JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    res.status(201).json({
+      message: "User registered successfully!",
+      token,
+      user: {
+        id: newUser._id,
+        role: newUser.role,
+        email: newUser.email,
+      },
+    });
   } catch (error) {
-    res.status(500).json({ message: "Registration failed.", error });
+    console.error(error);
+    res.status(500).json({ message: "Registration failed.", error: error.message });
   }
 });
 
-// Login
+// =====================
+// LOGIN
+// =====================
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
-    if (!user)
+    if (!user) {
       return res.status(404).json({ message: "User not found." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials." });
+    }
 
+    // ✅ Generate token with role
     const token = jwt.sign(
       { id: user._id, role: user.role },
       JWT_SECRET,
@@ -58,13 +84,13 @@ router.post("/login", async (req, res) => {
       token,
       user: {
         id: user._id,
-        username: user.username,
-        email: user.email,
         role: user.role,
+        email: user.email,
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Login failed.", error });
+    console.error(error);
+    res.status(500).json({ message: "Login failed.", error: error.message });
   }
 });
 

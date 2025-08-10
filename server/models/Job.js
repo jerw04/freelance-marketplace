@@ -24,10 +24,11 @@ const JobSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    // Applications will be stored in a separate "Application" collection
     applicants: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Application", // links to applications table
+        ref: "Application",
       }
     ]
   },

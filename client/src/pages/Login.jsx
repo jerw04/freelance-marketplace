@@ -21,6 +21,8 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.user.role);
+      localStorage.setItem("userId", res.data.user.id); 
+
 
       if (res.data.user.role === "client") {
         navigate("/client-dashboard");

@@ -5,3 +5,19 @@ body {
   margin: 0;
   padding: 0;
 }
+
+@keyframes shine {
+  0% {
+    left: -75%;
+  }
+  50% {
+    left: 125%;
+  }
+  100% {
+    left: 125%;
+  }
+}
+
+.animate-shine {
+  animation: shine 3s infinite linear;
+}

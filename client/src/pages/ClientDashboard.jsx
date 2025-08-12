@@ -1,161 +1,98 @@
-// src/pages/ClientDashboard.jsx
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function ClientDashboard() {
   const [jobs, setJobs] = useState([]);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    budget: "",
-    category: "",
-  });
-
   const token = localStorage.getItem("token");
-  const clientId = localStorage.getItem("userId"); // stored in Login.jsx
+  const navigate = useNavigate();
 
-  // Fetch jobs for this client
   useEffect(() => {
-    if (!clientId) return;
-    fetchJobs();
-  }, [clientId]);
+    fetchClientJobs();
+  }, []);
 
-  const fetchJobs = async () => {
+  const fetchClientJobs = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/jobs/client/${clientId}`,
+        `http://localhost:5000/api/jobs/client/${localStorage.getItem("userId")}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
       setJobs(res.data);
     } catch (err) {
-      console.error("Error fetching jobs:", err);
+      console.error("Error fetching client jobs:", err);
     }
   };
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
-  const handlePostJob = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post(
-        "http://localhost:5000/api/jobs",
-        { ...formData }, // no clientId here, backend uses token
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setFormData({ title: "", description: "", budget: "", category: "" });
-      fetchJobs();
-    } catch (err) {
-      console.error("Error posting job:", err);
-      alert("Failed to post job");
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Client Dashboard</h1>
-
-      {/* Post Job Form */}
-      <form
-        onSubmit={handlePostJob}
-        className="bg-white p-6 rounded shadow mb-6"
-      >
-        <h2 className="text-xl font-semibold mb-4">Post a Job</h2>
-        <input
-          type="text"
-          name="title"
-          placeholder="Job Title"
-          className="w-full border p-2 mb-3 rounded"
-          value={formData.title}
-          onChange={handleChange}
-          required
-        />
-        <textarea
-          name="description"
-          placeholder="Job Description"
-          className="w-full border p-2 mb-3 rounded"
-          value={formData.description}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="number"
-          name="budget"
-          placeholder="Budget"
-          className="w-full border p-2 mb-3 rounded"
-          value={formData.budget}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="category"
-          placeholder="Category"
-          className="w-full border p-2 mb-3 rounded"
-          value={formData.category}
-          onChange={handleChange}
-          required
-        />
+      {/* Header with Logout */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Client Dashboard</h1>
         <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded"
+          onClick={handleLogout}
+          className="bg-red-500 text-white px-4 py-2 rounded"
         >
-          Post Job
+          Logout
         </button>
-      </form>
+      </div>
 
-      {/* Job List */}
-      <h2 className="text-xl font-semibold mb-4">My Jobs</h2>
       {jobs.length === 0 ? (
         <p>No jobs posted yet.</p>
       ) : (
-        <ul className="space-y-4">
-          {jobs.map((job) => (
-            <li key={job._id} className="bg-gray-100 p-4 rounded shadow">
-              <h3 className="text-lg font-bold">{job.title}</h3>
-              <p>{job.description}</p>
-              <p className="text-sm">Budget: ${job.budget}</p>
-              <p className="text-sm">Category: {job.category}</p>
+        jobs.map((job) => (
+          <div key={job._id} className="bg-white p-4 rounded shadow mb-6">
+            <h3 className="text-xl font-bold">{job.title}</h3>
+            <p>{job.description}</p>
+            <p className="text-sm">Budget: ${job.budget}</p>
+            <p className="text-sm">Category: {job.category}</p>
 
-              {/* Applicants Section */}
-              {job.applicants && job.applicants.length > 0 ? (
-                <div className="mt-2">
-                  <h4 className="font-semibold">Applicants:</h4>
-                  <ul>
-                    {job.applicants.map((app) => (
-                      <li key={app._id} className="border-t pt-1 mt-1">
-                        {app.freelancer?.username}{" "}
-                        {app.freelancer?.resumeUrl && (
-                          <>
-                            -{" "}
-                            <a
-                              href={app.freelancer.resumeUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-blue-500 underline"
-                            >
-                              View Resume
-                            </a>
-                          </>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <p className="text-gray-500">No applicants yet.</p>
-              )}
-            </li>
-          ))}
-        </ul>
+            {/* Applicants List */}
+            <h4 className="mt-4 text-lg font-semibold">Applicants:</h4>
+            {job.applicants && job.applicants.length > 0 ? (
+  <div className="grid gap-4 mt-2">
+    {job.applicants.map((app, i) => (
+      <div
+        key={i}
+        className="relative p-4 rounded-lg border border-gray-500 shadow-md bg-black/50 backdrop-blur-md overflow-hidden"
+        style={{
+          background:
+            "linear-gradient(135deg, rgba(0,0,0,0.6), rgba(0,0,0,0.3))",
+        }}
+      >
+        {/* Diagonal Shine Animation */}
+        <div className="absolute top-0 left-[-75%] w-[50%] h-full bg-white/20 transform rotate-12 animate-shine"></div>
+
+        <p className="font-semibold text-white">
+          {app.freelancer?.username || "Unknown"}
+        </p>
+        <p className="text-gray-300">
+          Resume:{" "}
+          <a
+            href={app.resumeUrl}
+            className="text-blue-400 underline"
+            target="_blank"
+            rel="noreferrer"
+          >
+            View
+          </a>
+        </p>
+        <p className="text-sm text-gray-400">{app.coverLetter}</p>
+      </div>
+    ))}
+  </div>
+) : (
+  <p className="text-gray-500">No applicants yet.</p>
+)}
+
+          </div>
+        ))
       )}
     </div>
   );

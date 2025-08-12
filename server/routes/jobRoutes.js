@@ -35,6 +35,31 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/jobs - Get all jobs (for freelancers)
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Optional: only freelancers can see jobs here
+    if (user.role !== "freelancer") {
+      return res.status(403).json({ message: "Only freelancers can view this list" });
+    }
+
+    const jobs = await Job.find()
+      .populate("clientId", "username") // show client username
+      .sort({ createdAt: -1 });
+
+    res.json(jobs);
+  } catch (err) {
+    console.error("Error fetching jobs:", err);
+    res.status(500).json({ message: "Failed to fetch jobs" });
+  }
+});
+
+
 // GET /api/jobs/client/:clientId - Get all jobs posted by a client
 router.get("/client/:clientId", authMiddleware, async (req, res) => {
   try {
